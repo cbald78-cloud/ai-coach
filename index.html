@@ -1,247 +1,469 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AI Coach</title>
+  <meta name="theme-color" content="#0b1020" />
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: #f9fafb;
+    :root{
+      --bg0:#060914;
+      --bg1:#0b1020;
+      --card: rgba(255,255,255,.06);
+      --card2: rgba(255,255,255,.08);
+      --border: rgba(255,255,255,.12);
+      --text:#eaf0ff;
+      --muted: rgba(234,240,255,.68);
+      --primary:#7c3aed;
+      --primary2:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --shadow: 0 20px 60px rgba(0,0,0,.45);
+      --radius: 18px;
+      --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     }
-    h1 { margin-top: 0; }
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,.05);
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--font);
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 20% 10%, rgba(124,58,237,.22), transparent 60%),
+        radial-gradient(900px 700px at 85% 15%, rgba(34,197,94,.18), transparent 55%),
+        radial-gradient(900px 700px at 50% 120%, rgba(59,130,246,.14), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow:hidden; /* single-screen vibe */
     }
-    button {
-      width: 100%;
-      padding: 14px;
-      border-radius: 10px;
-      border: none;
-      background: #4f46e5;
-      color: white;
-      font-size: 16px;
-      font-weight: 600;
+
+    /* Top bar */
+    .top{
+      position:sticky; top:0; z-index:50;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 14px;
+      background: rgba(6,9,20,.55);
+      border-bottom:1px solid rgba(255,255,255,.08);
+      backdrop-filter: blur(10px);
+    }
+    .brand{display:flex; flex-direction:column; gap:2px}
+    .brand .t{font-weight:900; letter-spacing:.2px}
+    .brand .s{font-size:12px; color:var(--muted)}
+    .top .btnrow{display:flex; gap:10px; align-items:center}
+    button{
+      border:none; border-radius:14px;
+      padding:11px 12px;
+      font:inherit;
+      cursor:pointer;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button:disabled{opacity:.45; cursor:not-allowed}
+    .ghost{
+      background: rgba(255,255,255,.07);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,.10);
+      font-weight:800;
+    }
+    .ghost:active{transform:scale(.99)}
+    .primary{
+      background: linear-gradient(135deg, rgba(124,58,237,1), rgba(59,130,246,1));
+      color:#fff;
+      font-weight:900;
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: 0 14px 38px rgba(124,58,237,.18);
+    }
+    .primary:active{transform:scale(.99)}
+    .link{
+      background:transparent;
+      padding:10px 0;
+      border-radius:0;
+      color: rgba(234,240,255,.9);
+      font-weight:900;
+      text-decoration:none;
+    }
+
+    /* Layout */
+    .wrap{
+      height: calc(100% - 54px);
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 16px 14px 18px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .row{display:flex; align-items:center; gap:12px}
+    .space{justify-content:space-between}
+
+    /* Progress */
+    .progressBar{
+      width:100%;
+      height:12px;
+      border-radius:999px;
+      background: rgba(255,255,255,.08);
+      overflow:hidden;
+      border: 1px solid rgba(255,255,255,.10);
+    }
+    .progressFill{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(34,197,94,1), rgba(124,58,237,1), rgba(59,130,246,1));
+      border-radius:999px;
+      transition: width .35s ease;
+    }
+    .pill{
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+      color: var(--muted);
+      font-size:12px;
+      white-space:nowrap;
+    }
+
+    /* Cards */
+    .card{
+      background: var(--card);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .panel{
+      padding:16px;
+    }
+
+    /* Screen container (single page) */
+    .screen{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      gap:12px;
+      min-height:0;
+    }
+
+    /* Mascot area */
+    .mascotShell{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 8px 0 0;
+      min-height: 170px;
+    }
+
+    /* Mascot: “Supertype AI Guide” */
+    .mascot{
+      width: 150px; height: 150px;
+      border-radius: 999px;
+      position:relative;
+      transform: translateZ(0);
+      cursor:pointer;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+      filter: drop-shadow(0 20px 40px rgba(0,0,0,.45));
+      animation: floaty 2.8s ease-in-out infinite;
+    }
+    @keyframes floaty{
+      0%,100%{ transform: translateY(0px) }
+      50%{ transform: translateY(-8px) }
+    }
+    .core{
+      position:absolute; inset:0;
+      border-radius:999px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.28), transparent 40%),
+        radial-gradient(circle at 70% 70%, rgba(34,197,94,.22), transparent 45%),
+        radial-gradient(circle at 65% 25%, rgba(124,58,237,.35), transparent 45%),
+        radial-gradient(circle at 40% 75%, rgba(59,130,246,.25), transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.06),
+        0 0 60px rgba(124,58,237,.25);
+    }
+    .ring{
+      position:absolute; inset: -8px;
+      border-radius:999px;
+      border:1px dashed rgba(234,240,255,.18);
+      animation: spin 7s linear infinite;
+      opacity:.85;
+    }
+    @keyframes spin{ to{ transform: rotate(360deg) } }
+
+    /* Eyes + face */
+    .face{
+      position:absolute;
+      left:50%; top:52%;
+      transform: translate(-50%,-50%);
+      width: 92px; height: 60px;
+    }
+    .eye{
+      width: 18px; height: 18px;
+      border-radius: 999px;
+      background: rgba(234,240,255,.92);
+      position:absolute; top:8px;
+      box-shadow: 0 0 18px rgba(234,240,255,.35);
+      animation: blink 4.5s infinite;
+    }
+    .eye.left{ left:14px }
+    .eye.right{ right:14px }
+    @keyframes blink{
+      0%, 2%, 60%, 100% { transform: scaleY(1) }
+      1% { transform: scaleY(.12) }
+    }
+    .pupil{
+      width: 7px; height: 7px;
+      border-radius:999px;
+      background: rgba(6,9,20,.85);
+      position:absolute;
+      left: 6px; top: 6px;
+    }
+    .mouth{
+      position:absolute;
+      left:50%; top:38px;
+      transform: translateX(-50%);
+      width: 34px; height: 10px;
+      border-radius: 0 0 999px 999px;
+      border: 2px solid rgba(234,240,255,.75);
+      border-top:none;
+      opacity:.85;
+    }
+
+    /* Mascot “modes” */
+    .mascot[data-mood="energetic"] .ring{ opacity:1; border-color: rgba(34,197,94,.28) }
+    .mascot[data-mood="wise"] .ring{ opacity:.9; border-color: rgba(124,58,237,.30) }
+    .mascot[data-mood="hype"]{
+      animation: hype 1.2s ease-in-out infinite;
+    }
+    @keyframes hype{
+      0%,100%{ transform: translateY(0) rotate(0deg) }
+      30%{ transform: translateY(-10px) rotate(-2deg) }
+      60%{ transform: translateY(-6px) rotate(2deg) }
+    }
+
+    /* Speech bubble */
+    .bubble{
+      margin: 0 auto;
+      max-width: 720px;
+      padding: 14px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      color: rgba(234,240,255,.94);
+      line-height:1.35;
+      font-weight:800;
+      letter-spacing:.1px;
+    }
+    .bubble small{
+      display:block;
+      margin-top:6px;
+      color: var(--muted);
+      font-weight:700;
+      letter-spacing:0;
+    }
+
+    /* Actions area */
+    .actions{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-height: 200px;
+    }
+    .promptBox{
+      width:100%;
+      min-height:120px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      color: rgba(234,240,255,.94);
+      padding: 12px 12px;
+      font: 14px/1.4 var(--font);
+      resize: none;
+    }
+    .input{
+      width:100%;
+      padding: 14px 14px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      color: rgba(234,240,255,.94);
+      font: 16px/1.3 var(--font);
+      outline:none;
+    }
+    .hint{
+      color: var(--muted);
+      font-size: 12px;
+      line-height:1.35;
+    }
+
+    /* Choice buttons */
+    .choices{display:flex; flex-direction:column; gap:10px}
+    .choiceBtn{
+      background: rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.10);
+      color: rgba(234,240,255,.92);
+      font-weight:900;
+      text-align:left;
+      padding: 14px 14px;
+      border-radius: 16px;
+    }
+    .choiceBtn:active{transform:scale(.99)}
+    .choiceBtn.good{border-color: rgba(34,197,94,.35)}
+    .choiceBtn.bad{border-color: rgba(239,68,68,.35)}
+    .choiceBtn.selected{
+      outline: 2px solid rgba(124,58,237,.55);
+      background: rgba(124,58,237,.12);
+    }
+
+    /* Bottom nav */
+    .nav{
+      display:flex; justify-content:space-between; gap:10px;
+      padding-top: 8px;
+    }
+    .nav button{flex:1}
+    .nav .ghost{flex:0 0 120px}
+    .nav .primary{flex:1}
+
+    /* Toast */
+    .toast{
+      position:fixed; left:50%; bottom:18px;
+      transform:translateX(-50%);
+      background: rgba(0,0,0,.72);
+      border: 1px solid rgba(255,255,255,.12);
+      color:#fff;
+      padding:10px 12px;
+      border-radius:14px;
+      box-shadow: var(--shadow);
+      max-width: 920px;
+      z-index: 999;
+    }
+    .toast.hidden{display:none}
+
+    /* Confetti */
+    .confetti{
+      position:fixed; inset:0;
+      pointer-events:none;
+      overflow:hidden;
+      z-index: 900;
+    }
+    .confetti span{
+      position:absolute;
+      top:-20px;
+      width:10px; height:14px;
+      border-radius:3px;
+      opacity:.95;
+      animation: fall 1.3s linear forwards;
+    }
+    @keyframes fall{
+      to{ transform: translateY(calc(100vh + 40px)) rotate(220deg); opacity:1; }
+    }
+
+    /* Small screens */
+    @media (max-height: 720px){
+      .mascotShell{ min-height: 150px }
+      .mascot{ width: 135px; height: 135px }
+      .actions{ min-height: 170px }
+      .promptBox{ min-height: 104px }
     }
   </style>
 </head>
+
 <body>
-<header class="top">
-  <div>
-    <div class="title">AI Coach</div>
-    <div class="sub" id="subtitle">Lesson 1: Asking for what you want</div>
-  </div>
-  <button class="ghost" id="btnReset" type="button">Reset</button>
-</header>
+  <header class="top">
+    <div class="brand">
+      <div class="t">AI Coach</div>
+      <div class="s" id="subline">Lesson 1 · Ask Like a Pro</div>
+    </div>
+    <div class="btnrow">
+      <span class="pill" id="pill">0/0</span>
+      <button class="ghost" id="btnReset" type="button">Reset</button>
+    </div>
+  </header>
 
-<main class="wrap">
-  <!-- HOME -->
-  <section id="home" class="view">
-    <h1 class="h1">Start Lesson 1</h1>
-    <p class="muted">
-      This lesson teaches the 5 core skills that unlock better AI results. You’ll build prompts as you go.
-      Your progress saves automatically on this device.
-    </p>
+  <div class="wrap">
+    <div class="row space">
+      <div class="progressBar" aria-label="progress">
+        <div class="progressFill" id="progressFill"></div>
+      </div>
+      <span class="pill" id="stepLabel">Step</span>
+    </div>
 
-    <div class="card">
-      <div class="row space">
-        <div>
-          <div class="kicker">Everyday AI</div>
-          <div class="h2">Ask for things the right way</div>
-          <div class="muted">Goal → Context → Constraints → Output → Iterate</div>
+    <div class="screen card panel">
+      <div class="mascotShell">
+        <div class="mascot" id="mascot" data-mood="energetic" role="button" aria-label="AI mascot">
+          <div class="ring"></div>
+          <div class="core"></div>
+          <div class="face">
+            <div class="eye left"><div class="pupil" id="pupilL"></div></div>
+            <div class="eye right"><div class="pupil" id="pupilR"></div></div>
+            <div class="mouth" id="mouth"></div>
+          </div>
         </div>
-        <div class="pill" id="homeProgress">0%</div>
       </div>
 
-      <div class="row" style="margin-top:12px">
-        <button class="primary" id="btnStart" type="button">Start Lesson</button>
-        <button class="ghost" id="btnResume" type="button">Resume</button>
+      <div class="bubble" id="bubble">
+        Let’s build a prompt that actually gets results.
+        <small>Tap me (the mascot) for bonus tips.</small>
       </div>
-    </div>
 
-    <div class="card">
-      <div class="h3">Quick note</div>
-      <p class="muted">
-        This app doesn’t call an AI directly yet. Instead, it helps you build prompts you can paste into ChatGPT (or any AI tool).
-        Later we can add an in-app “practice chat.”
-      </p>
-      <button class="ghost" id="btnOpenChatGPT" type="button">Open ChatGPT</button>
-    </div>
-  </section>
+      <div class="actions" id="actions"></div>
 
-  <!-- LESSON -->
-  <section id="lesson" class="view hidden">
-    <div class="row space" style="margin-bottom:10px">
-      <button class="link" id="btnBackHome" type="button">← Home</button>
-      <div class="pill" id="stepPill">Step 1 of 10</div>
-    </div>
-
-    <div class="bar">
-      <div class="bar__fill" id="barFill" style="width:0%"></div>
-    </div>
-
-    <div class="card">
-      <div class="kicker" id="stepKicker"></div>
-      <h2 class="h2" id="stepTitle"></h2>
-      <p class="muted" id="stepText"></p>
-
-      <!-- interactive area -->
-      <div id="interactive" class="interactive"></div>
-
-      <div class="row space" style="margin-top:14px">
-        <button class="ghost" id="btnPrev" type="button">Back</button>
+      <div class="nav">
+        <button class="ghost" id="btnBack" type="button">Back</button>
         <button class="primary" id="btnNext" type="button">Next</button>
       </div>
     </div>
-
-    <div class="card">
-      <div class="row space">
-        <div>
-          <div class="h3">Your Prompt Builder</div>
-          <div class="muted">Everything you enter rolls up into one final prompt.</div>
-        </div>
-        <button class="ghost" id="btnCopyFinal" type="button">Copy</button>
-      </div>
-      <textarea id="finalPrompt" class="box" readonly></textarea>
-
-      <div class="row" style="margin-top:10px">
-        <button class="primary" id="btnPractice" type="button">Practice: Copy + Open ChatGPT</button>
-        <button class="ghost" id="btnClearPrompt" type="button">Clear Prompt</button>
-      </div>
-    </div>
-  </section>
+  </div>
 
   <div id="toast" class="toast hidden"></div>
-</main>
-
-<style>
-  :root{
-    --bg:#f9fafb; --fg:#111827; --muted:#6b7280;
-    --card:#ffffff; --border:#e5e7eb;
-    --primary:#4f46e5; --primaryDark:#4338ca;
-    --shadow:0 10px 20px rgba(0,0,0,.06);
-    --radius:14px; --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  }
-  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font)}
-  .top{
-    position:sticky;top:0;z-index:20;background:rgba(249,250,251,.92);
-    backdrop-filter:blur(8px);border-bottom:1px solid var(--border);
-    padding:12px 16px;display:flex;justify-content:space-between;align-items:center
-  }
-  .title{font-weight:900}
-  .sub{color:var(--muted);font-size:13px}
-  .wrap{max-width:920px;margin:0 auto;padding:18px 16px 50px}
-  .h1{font-size:26px;margin:6px 0 10px}
-  .h2{font-size:20px;margin:6px 0 6px}
-  .h3{font-weight:800;margin:0 0 8px}
-  .muted{color:var(--muted);line-height:1.45}
-  .kicker{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:12px}
-  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-  .space{justify-content:space-between}
-  .pill{padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:12px}
-  button{border:none;border-radius:12px;padding:12px 12px;font:inherit}
-  .primary{background:var(--primary);color:#fff;font-weight:900}
-  .primary:active{background:var(--primaryDark)}
-  .ghost{background:#fff;border:1px solid var(--border);color:var(--fg);font-weight:700}
-  .link{background:transparent;color:var(--primary);padding:8px 0;border-radius:0;font-weight:900}
-  .view.hidden{display:none}
-  .bar{height:10px;border-radius:999px;background:#e5e7eb;overflow:hidden;margin:10px 0 12px}
-  .bar__fill{height:100%;background:var(--primary)}
-  .interactive{margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
-  .box{width:100%;min-height:140px;border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:#fff;font:14px/1.4 var(--font);resize:vertical}
-  .field{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#fff;font:14px/1.4 var(--font)}
-  .choice{display:flex;gap:10px;flex-direction:column}
-  .choice button{width:100%}
-  .tag{display:inline-block;padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:#fff;color:var(--muted);font-size:12px}
-  .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 12px;border-radius:12px;box-shadow:var(--shadow);max-width:880px}
-  .toast.hidden{display:none}
-  .ok{border-color:#bbf7d0}
-  .bad{border-color:#fecaca}
-</style>
+  <div id="confetti" class="confetti hidden" aria-hidden="true"></div>
 
 <script>
-  // -----------------------------
-  // Storage + helpers
-  // -----------------------------
-  const KEY = "ai_coach_lesson1_v1";
-
+  // ------------------------------------------------------------
+  // State + storage
+  // ------------------------------------------------------------
+  const KEY = "ai_coach_duo_lesson1_v2";
   const $ = (s) => document.querySelector(s);
-  const toast = (msg) => {
-    const t = $("#toast");
-    t.textContent = msg;
-    t.classList.remove("hidden");
-    setTimeout(() => t.classList.add("hidden"), 1500);
-  };
 
-  function loadState(){
-    try { return JSON.parse(localStorage.getItem(KEY) || "{}"); }
-    catch { return {}; }
-  }
-  function saveState(obj){
-    localStorage.setItem(KEY, JSON.stringify(obj));
-  }
-
-  // Our prompt builder model (what the learner fills in)
-  const modelDefaults = {
-    currentStep: 0,
+  const defaultState = {
+    i: 0,
+    mood: "energetic",
     builder: {
       goal: "",
       context: "",
       constraints: [],
-      output: "",
-      tone: "",
-      askFor: "",
-      followupRule: "",
-      exampleFilled: ""
+      format: "",
+      behavior: "",
+      finalPrompt: ""
+    },
+    answers: {
+      pickedVague: null,
+      pickedConstraints: [],
+      reflection: null
     }
   };
 
-  function getModel(){
-    const s = loadState();
-    return {
-      ...modelDefaults,
-      ...s,
-      builder: { ...modelDefaults.builder, ...(s.builder || {}) }
-    };
+  function loadState(){
+    try { return { ...defaultState, ...(JSON.parse(localStorage.getItem(KEY) || "{}")) }; }
+    catch { return { ...defaultState }; }
   }
-
-  function setModel(patch){
-    const m = getModel();
-    const next = { ...m, ...patch, builder: { ...m.builder, ...(patch.builder || {}) } };
-    saveState(next);
+  function saveState(patch){
+    const s = loadState();
+    const next = {
+      ...s,
+      ...patch,
+      builder: { ...s.builder, ...(patch.builder || {}) },
+      answers: { ...s.answers, ...(patch.answers || {}) }
+    };
+    localStorage.setItem(KEY, JSON.stringify(next));
     return next;
   }
 
-  function percentComplete(){
-    const m = getModel();
-    const total = lessonSteps.length;
-    const idx = Math.min(m.currentStep, total-1);
-    return Math.round(((idx) / (total-1)) * 100);
-  }
-
-  function buildFinalPrompt(){
-    const b = getModel().builder;
-
-    const constraints = (b.constraints || []).length
-      ? `Constraints:\n- ${b.constraints.join("\n- ")}\n\n`
-      : "";
-
-    const tone = b.tone ? `Tone: ${b.tone}\n\n` : "";
-    const output = b.output ? `Output format: ${b.output}\n\n` : "";
-    const askFor = b.askFor ? `What I want from you:\n${b.askFor}\n\n` : "";
-    const follow = b.followupRule ? `If anything is unclear, ${b.followupRule}\n\n` : "";
-
-    const goal = b.goal ? `Goal:\n${b.goal}\n\n` : "";
-    const context = b.context ? `Context:\n${b.context}\n\n` : "";
-
-    return `${goal}${context}${constraints}${tone}${output}${askFor}${follow}`.trim();
+  function toast(msg){
+    const t = $("#toast");
+    t.textContent = msg;
+    t.classList.remove("hidden");
+    setTimeout(() => t.classList.add("hidden"), 1400);
   }
 
   async function copy(text){
@@ -256,579 +478,536 @@
   }
 
   function openChatGPT(){
-    // Keep it simple—opens in a new tab
     window.open("https://chat.openai.com/", "_blank");
   }
 
-  // -----------------------------
-  // Lesson content (immersive)
-  // Total steps: 10 (5 skills + practice + quiz)
-  // -----------------------------
-  const lessonSteps = [
-    {
-      kicker: "Skill 1 of 5",
-      title: "Define a clear goal (the outcome)",
-      text: "AI cannot read your mind. A clear goal is one sentence that describes the outcome you want. You can add details later.",
-      render: () => renderGoalStep()
-    },
-    {
-      kicker: "Practice",
-      title: "Spot the difference: vague vs clear",
-      text: "Pick the clearer request. This trains your instincts.",
-      render: () => renderVagueVsClear()
-    },
-    {
-      kicker: "Skill 2 of 5",
-      title: "Add context (only what matters)",
-      text: "Context helps the AI make correct assumptions. Keep it relevant: who, what you have, what you tried, what “good” looks like.",
-      render: () => renderContextStep()
-    },
-    {
-      kicker: "Skill 3 of 5",
-      title: "Add constraints (boundaries)",
-      text: "Constraints reduce bad guesses. Examples: time, budget, tools, audience, reading level, what to avoid, and must-include items.",
-      render: () => renderConstraintsStep()
-    },
-    {
-      kicker: "Practice",
-      title: "Choose constraints that actually help",
-      text: "Pick 3 constraints that would most improve your result.",
-      render: () => renderConstraintsQuiz()
-    },
-    {
-      kicker: "Skill 4 of 5",
-      title: "Specify the output format",
-      text: "Tell the AI what the answer should look like: checklist, table, step-by-step, bullets, script, shopping list, etc.",
-      render: () => renderOutputStep()
-    },
-    {
-      kicker: "Skill 5 of 5",
-      title: "Tell it how to behave (tone + process)",
-      text: "You can set tone (simple, friendly, direct) and process (ask questions first, then deliver). This is huge for ADHD-friendly responses.",
-      render: () => renderToneProcessStep()
-    },
-    {
-      kicker: "Build it",
-      title: "Assemble your final request",
-      text: "Now you’ll choose what you want the AI to do, and set a rule for follow-ups. This makes the response higher quality.",
-      render: () => renderAskForStep()
-    },
-    {
-      kicker: "Practice run",
-      title: "Try it in ChatGPT",
-      text: "Copy your final prompt and test it. Then come back and refine it (iteration is the secret).",
-      render: () => renderPracticeStep()
-    },
-    {
-      kicker: "Checkpoint",
-      title: "Mini-quiz: Did we hit the 5 essentials?",
-      text: "Answer 5 quick checks. This locks the skills in memory.",
-      render: () => renderFinalQuiz()
+  // ------------------------------------------------------------
+  // Mascot: interactive + animated
+  // ------------------------------------------------------------
+  const mascotLines = {
+    energetic: [
+      "Okay! Quick win: lead with your goal. One sentence.",
+      "You’re closer than you think. Add constraints and you’ll feel the difference.",
+      "Let’s go. Tiny prompts, big results.",
+      "Pro tip: ask for options + a recommendation."
+    ],
+    wise: [
+      "Clarity beats cleverness. Say what success looks like.",
+      "Context is a scalpel, not a novel. Keep only what changes the answer.",
+      "Constraints guide the model’s assumptions—use them deliberately.",
+      "Iteration is the real skill: keep, change, success criteria."
+    ],
+    hype: [
+      "YES. That’s the energy. Now make it specific!",
+      "Clean prompt. Clean output. Let’s ship it.",
+      "You’re cooking now. Add the format and lock it in."
+    ]
+  };
+
+  function setMascotMood(m){
+    saveState({ mood: m });
+    $("#mascot").setAttribute("data-mood", m);
+  }
+
+  function mascotSpeak(){
+    const s = loadState();
+    const mood = s.mood || "energetic";
+    const pool = mascotLines[mood] || mascotLines.energetic;
+    const line = pool[Math.floor(Math.random() * pool.length)];
+    $("#bubble").innerHTML = `${line}<small>Tap again for another tip.</small>`;
+  }
+
+  // Eye tracking for fun (subtle)
+  function attachEyeTracking(){
+    const pupilL = $("#pupilL");
+    const pupilR = $("#pupilR");
+    const mascot = $("#mascot");
+    function move(e){
+      const r = mascot.getBoundingClientRect();
+      const cx = r.left + r.width/2;
+      const cy = r.top + r.height/2;
+      const x = ("touches" in e && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+      const y = ("touches" in e && e.touches[0]) ? e.touches[0].clientY : e.clientY;
+      const dx = Math.max(-10, Math.min(10, (x - cx) / 18));
+      const dy = Math.max(-8, Math.min(8, (y - cy) / 18));
+      pupilL.style.transform = `translate(${dx}px, ${dy}px)`;
+      pupilR.style.transform = `translate(${dx}px, ${dy}px)`;
     }
+    window.addEventListener("mousemove", move, {passive:true});
+    window.addEventListener("touchmove", move, {passive:true});
+  }
+
+  // ------------------------------------------------------------
+  // Lesson content: Duolingo-style single screens
+  // ------------------------------------------------------------
+  const lesson = [
+    {
+      id: "start",
+      stepLabel: "Start",
+      mood: "energetic",
+      bubble: "Welcome. I’m your AI Guide. We’ll build a prompt in small moves—Duolingo style.",
+      render: () => {
+        $("#actions").innerHTML = `
+          <div class="choices">
+            <button class="choiceBtn good" id="go">Start Lesson</button>
+            <button class="choiceBtn" id="resume">Resume where I left off</button>
+          </div>
+          <div class="hint">Tip: Tap the mascot for bonus tips anytime.</div>
+        `;
+        $("#go").onclick = () => { saveState({ i: 1 }); render(); };
+        $("#resume").onclick = () => { render(); };
+      },
+      canNext: () => true,
+      onNext: () => { saveState({ i: 1 }); }
+    },
+
+    // Skill 1: Goal
+    {
+      id: "goal-explain",
+      stepLabel: "1/10",
+      mood: "wise",
+      bubble: "Step 1: State a clear goal. One sentence. Outcome-based.",
+      render: () => {
+        const s = loadState();
+        $("#actions").innerHTML = `
+          <input class="input" id="goal" placeholder="Goal: e.g., Plan dinner for 4 under $25..." value="${escapeHtml(s.builder.goal || "")}" />
+          <div class="hint">Keep it specific. Avoid “help me” by itself.</div>
+          <div class="choices">
+            <button class="choiceBtn" id="goalExample">Use a strong example</button>
+          </div>
+        `;
+        $("#goal").addEventListener("input", (e) => {
+          saveState({ builder: { goal: e.target.value.trim() } });
+          updatePill();
+        });
+        $("#goalExample").onclick = () => {
+          const v = "Create a 7-step plan to learn how to ask AI for help effectively, with examples and practice prompts.";
+          $("#goal").value = v;
+          saveState({ builder: { goal: v } });
+          toast("Example inserted.");
+          updatePill();
+        };
+      },
+      canNext: () => (loadState().builder.goal || "").length >= 10
+    },
+
+    // Practice: Vague vs clear
+    {
+      id: "vague-vs-clear",
+      stepLabel: "2/10",
+      mood: "energetic",
+      bubble: "Quick check: pick the clearer request.",
+      render: () => {
+        const s = loadState();
+        const picked = s.answers.pickedVague;
+        $("#actions").innerHTML = `
+          <div class="choices">
+            <button class="choiceBtn ${picked===1?'selected':''}" id="a1">“Help me with AI.”</button>
+            <button class="choiceBtn ${picked===2?'selected':''}" id="a2">“Give me a step-by-step plan to use AI to plan dinners for 4, under $25, with a shopping list.”</button>
+          </div>
+          <div class="hint" id="fb"></div>
+        `;
+        const fb = $("#fb");
+        $("#a1").onclick = () => {
+          saveState({ answers: { pickedVague: 1 } });
+          fb.textContent = "That’s vague. The AI must guess what you need, so results are generic.";
+          render(); updatePill();
+        };
+        $("#a2").onclick = () => {
+          saveState({ answers: { pickedVague: 2 } });
+          fb.textContent = "Correct. Goal + constraints + format = better output.";
+          render(); updatePill();
+        };
+      },
+      canNext: () => loadState().answers.pickedVague === 2
+    },
+
+    // Skill 2: Context
+    {
+      id: "context",
+      stepLabel: "3/10",
+      mood: "wise",
+      bubble: "Step 2: Add relevant context. Keep it short: what matters to the answer.",
+      render: () => {
+        const s = loadState();
+        $("#actions").innerHTML = `
+          <input class="input" id="context" placeholder="Context: e.g., I'm a beginner, using iPhone..." value="${escapeHtml(s.builder.context || "")}" />
+          <div class="choices">
+            <button class="choiceBtn" id="ctxTemplate">Insert a template</button>
+          </div>
+          <div class="hint">Good context: tools, experience level, what you tried, success criteria.</div>
+        `;
+        $("#context").addEventListener("input", (e) => {
+          saveState({ builder: { context: e.target.value.trim() } });
+          updatePill();
+        });
+        $("#ctxTemplate").onclick = () => {
+          const v = "I’m a beginner. I learn best by doing in short steps. Keep it direct and practical.";
+          $("#context").value = v;
+          saveState({ builder: { context: v } });
+          toast("Template inserted.");
+          updatePill();
+        };
+      },
+      canNext: () => (loadState().builder.context || "").length >= 10
+    },
+
+    // Skill 3: Constraints (tap tiles)
+    {
+      id: "constraints",
+      stepLabel: "4/10",
+      mood: "energetic",
+      bubble: "Step 3: Choose constraints. Tap 2–4 that matter.",
+      render: () => {
+        const opts = [
+          "Use simple language (no jargon)",
+          "Give step-by-step instructions",
+          "Ask me up to 3 questions first",
+          "Include 3 examples",
+          "Keep it under 10 minutes to read",
+          "Format as a checklist",
+          "Avoid extra fluff"
+        ];
+        const s = loadState();
+        const selected = new Set(s.builder.constraints || []);
+        const btn = (t) => `
+          <button class="choiceBtn ${selected.has(t)?'selected':''}" data-opt="${escapeAttr(t)}">${escapeHtml(t)}</button>
+        `;
+        $("#actions").innerHTML = `
+          <div class="choices" id="grid">
+            ${opts.map(btn).join("")}
+          </div>
+          <div class="hint"><span class="pill" id="count">${selected.size} selected</span> · Pick at least 2.</div>
+          <div class="choices">
+            <button class="choiceBtn" id="clear">Clear selections</button>
+          </div>
+        `;
+        $("#grid").querySelectorAll("button[data-opt]").forEach(b => {
+          b.onclick = () => {
+            const t = b.getAttribute("data-opt");
+            if (selected.has(t)) selected.delete(t); else selected.add(t);
+            saveState({ builder: { constraints: Array.from(selected) } });
+            render(); updatePill();
+          };
+        });
+        $("#clear").onclick = () => {
+          saveState({ builder: { constraints: [] } });
+          toast("Cleared.");
+          render(); updatePill();
+        };
+      },
+      canNext: () => (loadState().builder.constraints || []).length >= 2
+    },
+
+    // Skill 4: Output format
+    {
+      id: "format",
+      stepLabel: "5/10",
+      mood: "wise",
+      bubble: "Step 4: Specify the output format. This controls how the answer looks.",
+      render: () => {
+        const s = loadState();
+        const picked = s.builder.format || "";
+        const choices = ["Checklist", "Step-by-step plan", "Table", "Two versions: short + detailed"];
+        $("#actions").innerHTML = `
+          <div class="choices" id="fmt">
+            ${choices.map(c => `<button class="choiceBtn ${picked===c?'selected':''}" data-f="${escapeAttr(c)}">${escapeHtml(c)}</button>`).join("")}
+          </div>
+          <input class="input" id="fmtCustom" placeholder="Or type a custom format..." value="${escapeHtml(picked)}" />
+          <div class="hint">Example: “Give me a 10-step checklist + a shopping list.”</div>
+        `;
+        $("#fmt").querySelectorAll("button[data-f]").forEach(b => {
+          b.onclick = () => {
+            const v = b.getAttribute("data-f");
+            saveState({ builder: { format: v } });
+            render(); updatePill();
+          };
+        });
+        $("#fmtCustom").addEventListener("input", (e) => {
+          saveState({ builder: { format: e.target.value.trim() } });
+          updatePill();
+        });
+      },
+      canNext: () => (loadState().builder.format || "").length >= 3
+    },
+
+    // Skill 5: Behavior / process
+    {
+      id: "behavior",
+      stepLabel: "6/10",
+      mood: "energetic",
+      bubble: "Step 5: Tell the AI how to respond. This is the secret weapon.",
+      render: () => {
+        const s = loadState();
+        const picked = s.builder.behavior || "";
+        const choices = [
+          "Ask up to 3 clarifying questions first, then answer.",
+          "Give 3 options, then recommend the best one for me.",
+          "Answer first, then ask what to refine.",
+          "State assumptions, then provide the solution."
+        ];
+        $("#actions").innerHTML = `
+          <div class="choices" id="beh">
+            ${choices.map(c => `<button class="choiceBtn ${picked===c?'selected':''}" data-b="${escapeAttr(c)}">${escapeHtml(c)}</button>`).join("")}
+          </div>
+          <div class="hint">Pick one. You can change it anytime.</div>
+        `;
+        $("#beh").querySelectorAll("button[data-b]").forEach(b => {
+          b.onclick = () => {
+            const v = b.getAttribute("data-b");
+            saveState({ builder: { behavior: v } });
+            render(); updatePill();
+          };
+        });
+      },
+      canNext: () => (loadState().builder.behavior || "").length >= 8
+    },
+
+    // Mission: Ask badly on purpose (external)
+    {
+      id: "mission-bad",
+      stepLabel: "7/10",
+      mood: "wise",
+      bubble: "Mission 1: Ask badly on purpose. You learn faster when you feel the failure mode.",
+      render: () => {
+        $("#actions").innerHTML = `
+          <div class="choices">
+            <button class="choiceBtn bad" id="copyBad">Copy a BAD prompt</button>
+            <button class="choiceBtn" id="open">Open ChatGPT</button>
+          </div>
+          <textarea class="promptBox" id="box" readonly></textarea>
+          <div class="hint">Do it: paste the bad prompt into ChatGPT, read the response, then come back.</div>
+        `;
+        const bad = "Help me with this.";
+        $("#box").value = bad;
+        $("#copyBad").onclick = () => copy(bad);
+        $("#open").onclick = openChatGPT;
+      },
+      canNext: () => true
+    },
+
+    // Reflection (tap)
+    {
+      id: "reflection",
+      stepLabel: "8/10",
+      mood: "energetic",
+      bubble: "Reflection: what went wrong with the bad prompt?",
+      render: () => {
+        const s = loadState();
+        const r = s.answers.reflection;
+        const choices = [
+          "Too vague",
+          "No constraints",
+          "No format requested",
+          "AI had to guess everything"
+        ];
+        $("#actions").innerHTML = `
+          <div class="choices" id="ref">
+            ${choices.map(c => `<button class="choiceBtn ${r===c?'selected':''}" data-r="${escapeAttr(c)}">${escapeHtml(c)}</button>`).join("")}
+          </div>
+          <div class="hint">Pick one to continue.</div>
+        `;
+        $("#ref").querySelectorAll("button[data-r]").forEach(b => {
+          b.onclick = () => {
+            const v = b.getAttribute("data-r");
+            saveState({ answers: { reflection: v } });
+            toast("Locked in.");
+            render(); updatePill();
+          };
+        });
+      },
+      canNext: () => !!loadState().answers.reflection
+    },
+
+    // Build final prompt + mission good
+    {
+      id: "mission-good",
+      stepLabel: "9/10",
+      mood: "hype",
+      bubble: "Mission 2: Now ask correctly. This is your “power prompt.”",
+      render: () => {
+        const s = loadState();
+        const final = buildFinalPrompt(s);
+        saveState({ builder: { finalPrompt: final } });
+
+        $("#actions").innerHTML = `
+          <textarea class="promptBox" id="final" readonly></textarea>
+          <div class="choices">
+            <button class="choiceBtn good" id="copyGood">Copy prompt</button>
+            <button class="choiceBtn" id="open">Open ChatGPT</button>
+          </div>
+          <div class="hint">Paste it into ChatGPT. If the answer isn’t perfect, come back and tweak ONE thing (goal/constraints/format).</div>
+        `;
+        $("#final").value = final;
+        $("#copyGood").onclick = () => copy(final);
+        $("#open").onclick = openChatGPT;
+      },
+      canNext: () => true
+    },
+
+    // Finish + reward
+    {
+      id: "finish",
+      stepLabel: "10/10",
+      mood: "hype",
+      bubble: "Lesson complete. You just built a prompt that’s 10x more likely to work.",
+      render: () => {
+        $("#actions").innerHTML = `
+          <div class="choices">
+            <button class="choiceBtn good" id="celebrate">Claim reward</button>
+            <button class="choiceBtn" id="restart">Restart lesson</button>
+          </div>
+          <div class="hint">Next: we’ll add a real “test game” after lessons (puzzle + scoring).</div>
+        `;
+        $("#celebrate").onclick = () => { fireConfetti(); toast("XP +1 (coming soon)"); };
+        $("#restart").onclick = () => {
+          localStorage.removeItem(KEY);
+          toast("Reset complete.");
+          render();
+        };
+      },
+      canNext: () => true,
+      onNext: () => {}
+    },
   ];
 
-  // -----------------------------
-  // UI Rendering
-  // -----------------------------
-  function showHome(){
-    $("#home").classList.remove("hidden");
-    $("#lesson").classList.add("hidden");
-    $("#homeProgress").textContent = `${percentComplete()}%`;
+  function buildFinalPrompt(s){
+    const b = s.builder || {};
+    const parts = [];
+    parts.push(`Goal: ${b.goal || "[fill goal]"}`);
+    parts.push(`Context: ${b.context || "[fill context]"}`);
+    if ((b.constraints || []).length){
+      parts.push("Constraints:");
+      (b.constraints || []).forEach(c => parts.push(`- ${c}`));
+    } else {
+      parts.push("Constraints: [add 2–4 constraints]");
+    }
+    parts.push(`Output format: ${b.format || "[choose format]"}`);
+    parts.push(`How to respond: ${b.behavior || "[choose behavior]"}`);
+    parts.push("");
+    parts.push("Now deliver the answer.");
+    return parts.join("\n");
   }
 
-  function showLesson(){
-    $("#home").classList.add("hidden");
-    $("#lesson").classList.remove("hidden");
-    renderStep();
+  // ------------------------------------------------------------
+  // Render + navigation
+  // ------------------------------------------------------------
+  function updatePill(){
+    const s = loadState();
+    $("#pill").textContent = `${s.i+1}/${lesson.length}`;
+    $("#stepLabel").textContent = lesson[s.i]?.stepLabel || "";
+    const pct = Math.round((s.i / (lesson.length - 1)) * 100);
+    $("#progressFill").style.width = `${pct}%`;
   }
 
-  function renderStep(){
-    const m = getModel();
-    const idx = m.currentStep || 0;
-    const step = lessonSteps[idx];
+  function render(){
+    const s = loadState();
+    const idx = Math.max(0, Math.min(lesson.length-1, s.i || 0));
+    if (idx !== s.i) saveState({ i: idx });
 
-    $("#stepPill").textContent = `Step ${idx+1} of ${lessonSteps.length}`;
-    $("#barFill").style.width = `${Math.round((idx/(lessonSteps.length-1))*100)}%`;
+    const step = lesson[idx];
 
-    $("#stepKicker").textContent = step.kicker;
-    $("#stepTitle").textContent = step.title;
-    $("#stepText").textContent = step.text;
+    // mood
+    setMascotMood(step.mood || "energetic");
 
-    // interactive area
-    const host = $("#interactive");
-    host.innerHTML = "";
+    // bubble
+    $("#bubble").innerHTML = `${step.bubble}<small>Tap the mascot for bonus tips.</small>`;
+
+    // actions
     step.render();
 
     // nav
-    $("#btnPrev").disabled = idx === 0;
-    $("#btnNext").textContent = idx === lessonSteps.length-1 ? "Finish" : "Next";
+    $("#btnBack").disabled = idx === 0;
+    const isLast = idx === lesson.length - 1;
+    $("#btnNext").textContent = isLast ? "Done" : "Next";
 
-    // update builder textarea
-    $("#finalPrompt").value = buildFinalPrompt() || "Start filling steps above to build your final prompt…";
-    $("#homeProgress").textContent = `${percentComplete()}%`;
+    // gating
+    const ok = step.canNext ? step.canNext() : true;
+    $("#btnNext").disabled = !ok;
+
+    updatePill();
   }
 
   function go(delta){
-    const m = getModel();
-    const next = m.currentStep + delta;
-
+    const s = loadState();
+    const idx = s.i || 0;
+    const next = idx + delta;
     if (next < 0) return;
 
-    if (next >= lessonSteps.length){
-      toast("Lesson complete. Great work.");
-      showHome();
+    // Validate current step gate
+    const step = lesson[idx];
+    const ok = step.canNext ? step.canNext() : true;
+    if (delta > 0 && !ok){
+      // gentle guidance
+      setMascotMood("wise");
+      toast("Finish this step to continue.");
       return;
     }
 
-    setModel({ currentStep: next });
-    renderStep();
-  }
-
-  // -----------------------------
-  // Interactive step builders
-  // -----------------------------
-  function renderGoalStep(){
-    const host = $("#interactive");
-    host.innerHTML = `
-      <div class="h3">Write your goal</div>
-      <p class="muted">One sentence. Example: “Help me write a grocery list for taco night for 4 people under $30.”</p>
-      <textarea id="goalInput" class="box" placeholder="My goal is: ..."></textarea>
-      <div class="row space" style="margin-top:10px">
-        <span class="tag" id="goalHint">Tip: outcomes > questions</span>
-        <button class="ghost" id="goalExample" type="button">Use an example</button>
-      </div>
-    `;
-
-    const m = getModel();
-    const el = $("#goalInput");
-    el.value = m.builder.goal || "";
-    el.addEventListener("input", () => {
-      setModel({ builder: { goal: el.value.trim() } });
-      $("#finalPrompt").value = buildFinalPrompt() || "";
-    });
-
-    $("#goalExample").onclick = () => {
-      el.value = "Help me create a click-through lesson that teaches beginners how to ask AI for help, with examples and practice prompts.";
-      el.dispatchEvent(new Event("input"));
-      toast("Example inserted.");
-    };
-  }
-
-  function renderVagueVsClear(){
-    const host = $("#interactive");
-    host.innerHTML = `
-      <div class="h3">Pick the clearer request</div>
-      <div class="choice">
-        <button class="ghost" id="c1" type="button">“Help me with AI.”</button>
-        <button class="ghost" id="c2" type="button">“I want a 7-step plan to use AI to plan dinners for a family of 4. Keep it simple, include a shopping list, and avoid fancy ingredients.”</button>
-      </div>
-      <p class="muted" id="feedback" style="margin-top:10px"></p>
-    `;
-    $("#c1").onclick = () => $("#feedback").textContent = "That’s vague. The AI has to guess what ‘help’ means, so you get generic answers.";
-    $("#c2").onclick = () => $("#feedback").textContent = "Correct. Clear goal + constraints + output request = better responses.";
-  }
-
-  function renderContextStep(){
-    const host = $("#interactive");
-    host.innerHTML = `
-      <div class="h3">Add only relevant context</div>
-      <p class="muted">Keep it to 2–6 lines. Include what you have, what you tried, and what “good” means.</p>
-      <textarea id="contextInput" class="box" placeholder="Context: ..."></textarea>
-      <div class="row" style="margin-top:10px">
-        <button class="ghost" id="contextTemplate" type="button">Insert a template</button>
-      </div>
-    `;
-
-    const m = getModel();
-    const el = $("#contextInput");
-    el.value = m.builder.context || "";
-    el.addEventListener("input", () => {
-      setModel({ builder: { context: el.value.trim() } });
-      $("#finalPrompt").value = buildFinalPrompt() || "";
-    });
-
-    $("#contextTemplate").onclick = () => {
-      el.value =
-`I’m a beginner.
-I learn best by doing (short steps).
-I want a direct, practical answer.
-If you need more info, ask me 2–3 questions first.`;
-      el.dispatchEvent(new Event("input"));
-      toast("Template inserted.");
-    };
-  }
-
-  function renderConstraintsStep(){
-    const host = $("#interactive");
-    const options = [
-      "Keep it under 10 minutes to read",
-      "Use simple language (no jargon)",
-      "Give step-by-step instructions",
-      "Include 3 examples",
-      "Ask me up to 3 questions first",
-      "Avoid extra fluff",
-      "Format as a checklist",
-      "Assume I’m using an iPhone"
-    ];
-
-    const m = getModel();
-    const selected = new Set(m.builder.constraints || []);
-
-    host.innerHTML = `
-      <div class="h3">Choose constraints (tap to toggle)</div>
-      <p class="muted">Pick what matters. Too many constraints can make answers rigid.</p>
-      <div class="choice" id="constraintButtons"></div>
-      <div class="row space" style="margin-top:10px">
-        <span class="tag" id="constraintCount">${selected.size} selected</span>
-        <button class="ghost" id="constraintClear" type="button">Clear</button>
-      </div>
-    `;
-
-    const box = $("#constraintButtons");
-    options.forEach(opt => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "ghost";
-      btn.textContent = opt;
-
-      const applyStyle = () => {
-        btn.classList.toggle("primary", selected.has(opt));
-        btn.classList.toggle("ghost", !selected.has(opt));
-      };
-      applyStyle();
-
-      btn.onclick = () => {
-        if (selected.has(opt)) selected.delete(opt);
-        else selected.add(opt);
-
-        setModel({ builder: { constraints: Array.from(selected) } });
-        $("#finalPrompt").value = buildFinalPrompt() || "";
-        $("#constraintCount").textContent = `${selected.size} selected`;
-        applyStyle();
-      };
-
-      box.appendChild(btn);
-    });
-
-    $("#constraintClear").onclick = () => {
-      selected.clear();
-      setModel({ builder: { constraints: [] } });
-      renderStep();
-      toast("Cleared.");
-    };
-  }
-
-  function renderConstraintsQuiz(){
-    const host = $("#interactive");
-    host.innerHTML = `
-      <div class="h3">Pick the best 3 constraints for THIS goal</div>
-      <p class="muted"><strong>Scenario:</strong> “Write me a 30-minute dinner plan for 4 people using Walmart ingredients.”</p>
-      <div class="choice">
-        <button class="ghost" data-a="0" type="button">Tell me the history of Walmart</button>
-        <button class="ghost" data-a="1" type="button">Give a shopping list and a timed cooking plan</button>
-        <button class="ghost" data-a="1" type="button">Keep it under $25 and avoid spicy food</button>
-        <button class="ghost" data-a="1" type="button">Use simple language and give substitutions</button>
-      </div>
-      <p class="muted" id="cq" style="margin-top:10px"></p>
-    `;
-    host.querySelectorAll("button[data-a]").forEach(btn => {
-      btn.onclick = () => {
-        const ok = btn.getAttribute("data-a") === "1";
-        $("#cq").textContent = ok
-          ? "Good constraint. This will meaningfully improve the answer."
-          : "Not relevant. Constraints must directly shape the output you want.";
-      };
-    });
-  }
-
-  function renderOutputStep(){
-    const host = $("#interactive");
-    const choices = [
-      "Checklist (bullets)",
-      "Step-by-step plan",
-      "Table (columns)",
-      "Script I can read",
-      "Shopping list + plan",
-      "Two versions: short + detailed"
-    ];
-
-    host.innerHTML = `
-      <div class="h3">Choose an output format</div>
-      <p class="muted">This controls how the answer is structured. Pick one.</p>
-      <div class="choice" id="outChoices"></div>
-      <input id="outCustom" class="field" placeholder="Or type a custom format..." style="margin-top:10px" />
-    `;
-
-    const m = getModel();
-    const outBox = $("#outChoices");
-
-    choices.forEach(c => {
-      const b = document.createElement("button");
-      b.type="button";
-      b.className = "ghost";
-      b.textContent = c;
-      b.onclick = () => {
-        setModel({ builder: { output: c } });
-        $("#finalPrompt").value = buildFinalPrompt() || "";
-        toast("Output format set.");
-        renderStep();
-      };
-      outBox.appendChild(b);
-    });
-
-    const custom = $("#outCustom");
-    custom.value = m.builder.output || "";
-    custom.addEventListener("input", () => {
-      setModel({ builder: { output: custom.value.trim() } });
-      $("#finalPrompt").value = buildFinalPrompt() || "";
-    });
-  }
-
-  function renderToneProcessStep(){
-    const host = $("#interactive");
-    host.innerHTML = `
-      <div class="h3">Set tone + process</div>
-      <p class="muted">This is how you keep responses ADHD-friendly: direct, short steps, and “ask first if unclear.”</p>
-
-      <div class="row" style="margin-top:8px">
-        <span class="tag">Tone</span>
-      </div>
-      <div class="choice" id="toneChoices"></div>
-
-      <div class="row" style="margin-top:12px">
-        <span class="tag">Process</span>
-      </div>
-      <div class="choice" id="procChoices"></div>
-    `;
-
-    const tones = ["Direct and simple", "Friendly coach", "Professional and concise", "Detailed and thorough"];
-    const procs = [
-      "Ask me up to 3 questions first, then answer",
-      "Answer immediately, then ask follow-ups",
-      "Give 3 options, then recommend 1",
-      "Check assumptions before final answer"
-    ];
-
-    const toneHost = $("#toneChoices");
-    tones.forEach(t => {
-      const b = document.createElement("button");
-      b.type="button"; b.className="ghost"; b.textContent=t;
-      b.onclick = () => {
-        setModel({ builder: { tone: t } });
-        $("#finalPrompt").value = buildFinalPrompt() || "";
-        toast("Tone set.");
-        renderStep();
-      };
-      toneHost.appendChild(b);
-    });
-
-    const procHost = $("#procChoices");
-    procs.forEach(p => {
-      const b = document.createElement("button");
-      b.type="button"; b.className="ghost"; b.textContent=p;
-      b.onclick = () => {
-        setModel({ builder: { followupRule: p.endsWith(".") ? p : (p + ".") } });
-        $("#finalPrompt").value = buildFinalPrompt() || "";
-        toast("Process set.");
-        renderStep();
-      };
-      procHost.appendChild(b);
-    });
-  }
-
-  function renderAskForStep(){
-    const host = $("#interactive");
-    host.innerHTML = `
-      <div class="h3">What do you want the AI to produce?</div>
-      <p class="muted">Be explicit about deliverables. This is where good prompts become great prompts.</p>
-
-      <textarea id="askForInput" class="box" placeholder="Example: Give me 3 options, each with pros/cons, then recommend the best one and why."></textarea>
-
-      <div class="row" style="margin-top:10px">
-        <button class="ghost" id="askForExample" type="button">Insert a strong example</button>
-      </div>
-    `;
-
-    const m = getModel();
-    const el = $("#askForInput");
-    el.value = m.builder.askFor || "";
-    el.addEventListener("input", () => {
-      setModel({ builder: { askFor: el.value.trim() } });
-      $("#finalPrompt").value = buildFinalPrompt() || "";
-    });
-
-    $("#askForExample").onclick = () => {
-      el.value =
-`1) Ask me up to 3 clarifying questions if needed.
-2) Give me 3 options.
-3) For each option: pros/cons, time, cost, and risks.
-4) Recommend the best option for me and explain why.
-5) End with a short checklist I can follow.`;
-      el.dispatchEvent(new Event("input"));
-      toast("Example inserted.");
-    };
-  }
-
-  function renderPracticeStep(){
-    const host = $("#interactive");
-    host.innerHTML = `
-      <div class="h3">Practice loop (this is where mastery happens)</div>
-      <p class="muted">
-        1) Copy your final prompt.<br/>
-        2) Open ChatGPT and paste it.<br/>
-        3) Come back and refine one thing: goal, constraints, or format.
-      </p>
-      <div class="row">
-        <button class="primary" id="copyAndOpen" type="button">Copy + Open ChatGPT</button>
-        <button class="ghost" id="editReminder" type="button">What should I refine?</button>
-      </div>
-      <p class="muted" id="refHint" style="margin-top:10px"></p>
-    `;
-
-    $("#copyAndOpen").onclick = async () => {
-      const text = buildFinalPrompt();
-      if (!text) return toast("Build your prompt first.");
-      const ok = await copy(text);
-      if (ok) openChatGPT();
-    };
-
-    $("#editReminder").onclick = () => {
-      const tips = [
-        "Refine the goal: make it one sentence and outcome-based.",
-        "Add one constraint that truly matters (time, budget, format).",
-        "Specify the output format more clearly (checklist, table, steps).",
-        "Tell it what to avoid (jargon, long explanations, etc.).",
-        "Ask for options + a recommendation, not just a single answer."
-      ];
-      $("#refHint").textContent = tips[Math.floor(Math.random() * tips.length)];
-    };
-  }
-
-  function renderFinalQuiz(){
-    const host = $("#interactive");
-    host.innerHTML = `
-      <div class="h3">5 essentials check</div>
-      <p class="muted">Answer these. If you miss one, adjust your prompt builder above.</p>
-
-      <div class="card" style="box-shadow:none;margin:12px 0 0">
-        <div class="muted"><strong>1)</strong> Does your prompt state a specific goal?</div>
-        <div class="row" style="margin-top:8px">
-          <button class="ghost" data-q="1" data-a="yes" type="button">Yes</button>
-          <button class="ghost" data-q="1" data-a="no" type="button">No</button>
-        </div>
-      </div>
-
-      <div class="card" style="box-shadow:none;margin:12px 0 0">
-        <div class="muted"><strong>2)</strong> Did you include relevant context (not a long story)?</div>
-        <div class="row" style="margin-top:8px">
-          <button class="ghost" data-q="2" data-a="yes" type="button">Yes</button>
-          <button class="ghost" data-q="2" data-a="no" type="button">No</button>
-        </div>
-      </div>
-
-      <div class="card" style="box-shadow:none;margin:12px 0 0">
-        <div class="muted"><strong>3)</strong> Did you add constraints that shape the answer?</div>
-        <div class="row" style="margin-top:8px">
-          <button class="ghost" data-q="3" data-a="yes" type="button">Yes</button>
-          <button class="ghost" data-q="3" data-a="no" type="button">No</button>
-        </div>
-      </div>
-
-      <div class="card" style="box-shadow:none;margin:12px 0 0">
-        <div class="muted"><strong>4)</strong> Did you specify the output format?</div>
-        <div class="row" style="margin-top:8px">
-          <button class="ghost" data-q="4" data-a="yes" type="button">Yes</button>
-          <button class="ghost" data-q="4" data-a="no" type="button">No</button>
-        </div>
-      </div>
-
-      <div class="card" style="box-shadow:none;margin:12px 0 0">
-        <div class="muted"><strong>5)</strong> Did you tell the AI how to proceed (questions first / options / recommendation)?</div>
-        <div class="row" style="margin-top:8px">
-          <button class="ghost" data-q="5" data-a="yes" type="button">Yes</button>
-          <button class="ghost" data-q="5" data-a="no" type="button">No</button>
-        </div>
-      </div>
-
-      <div class="row" style="margin-top:12px">
-        <button class="primary" id="scoreQuiz" type="button">Score my quiz</button>
-        <span class="tag" id="quizScore">Not scored yet</span>
-      </div>
-    `;
-
-    const answers = {};
-    host.querySelectorAll("button[data-q]").forEach(btn => {
-      btn.onclick = () => {
-        const q = btn.getAttribute("data-q");
-        const a = btn.getAttribute("data-a");
-        answers[q] = a;
-        toast(`Saved: Q${q} = ${a.toUpperCase()}`);
-      };
-    });
-
-    $("#scoreQuiz").onclick = () => {
-      let score = 0;
-      for (let i=1;i<=5;i++){
-        if (answers[String(i)] === "yes") score++;
-      }
-      $("#quizScore").textContent = `${score}/5`;
-      if (score === 5) toast("Perfect. You’ve got the framework.");
-      else toast("Good. Go refine the missing pieces above.");
-    };
-  }
-
-  // -----------------------------
-  // Wire up buttons
-  // -----------------------------
-  $("#btnStart").addEventListener("click", () => {
-    setModel({ currentStep: 0 });
-    showLesson();
-  });
-
-  $("#btnResume").addEventListener("click", () => {
-    const m = getModel();
-    if ((m.currentStep || 0) === 0 && !buildFinalPrompt()) {
-      toast("Nothing to resume yet. Starting fresh.");
-      setModel({ currentStep: 0 });
+    if (next >= lesson.length){
+      return;
     }
-    showLesson();
-  });
 
-  $("#btnBackHome").addEventListener("click", showHome);
-  $("#btnPrev").addEventListener("click", () => go(-1));
+    saveState({ i: next });
+    render();
+  }
+
+  // ------------------------------------------------------------
+  // Confetti reward
+  // ------------------------------------------------------------
+  function fireConfetti(){
+    const c = $("#confetti");
+    c.classList.remove("hidden");
+    c.innerHTML = "";
+    const colors = ["#22c55e","#7c3aed","#3b82f6","#f59e0b","#eaf0ff"];
+    for (let i=0;i<34;i++){
+      const s = document.createElement("span");
+      s.style.left = Math.random()*100 + "%";
+      s.style.background = colors[Math.floor(Math.random()*colors.length)];
+      s.style.transform = `translateY(0) rotate(${Math.random()*180}deg)`;
+      s.style.animationDelay = (Math.random()*0.25) + "s";
+      s.style.opacity = 0.9;
+      s.style.width = (8 + Math.random()*8) + "px";
+      s.style.height = (10 + Math.random()*10) + "px";
+      c.appendChild(s);
+    }
+    setTimeout(()=>{ c.classList.add("hidden"); c.innerHTML=""; }, 1600);
+  }
+
+  // ------------------------------------------------------------
+  // Utilities
+  // ------------------------------------------------------------
+  function escapeHtml(str){
+    return String(str).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+  }
+  function escapeAttr(str){
+    return escapeHtml(str).replaceAll("'","&#39;");
+  }
+
+  // ------------------------------------------------------------
+  // Wire up UI
+  // ------------------------------------------------------------
+  $("#btnBack").addEventListener("click", () => go(-1));
   $("#btnNext").addEventListener("click", () => go(+1));
 
   $("#btnReset").addEventListener("click", () => {
     localStorage.removeItem(KEY);
-    $("#finalPrompt").value = "";
     toast("Reset complete.");
-    showHome();
+    render();
   });
 
-  $("#btnCopyFinal").addEventListener("click", async () => {
-    const text = buildFinalPrompt();
-    if (!text) return toast("Build your prompt first.");
-    await copy(text);
+  $("#mascot").addEventListener("click", () => {
+    // Toggle between energetic and wise, sometimes hype
+    const s = loadState();
+    const nextMood = (s.mood === "energetic") ? "wise" : "energetic";
+    setMascotMood(nextMood);
+    mascotSpeak();
   });
 
-  $("#btnPractice").addEventListener("click", async () => {
-    const text = buildFinalPrompt();
-    if (!text) return toast("Build your prompt first.");
-    const ok = await copy(text);
-    if (ok) openChatGPT();
-  });
+  attachEyeTracking();
 
-  $("#btnClearPrompt").addEventListener("click", () => {
-    setModel({ builder: { goal:"", context:"", constraints:[], output:"", tone:"", askFor:"", followupRule:"" } });
-    $("#finalPrompt").value = "Start filling steps above to build your final prompt…";
-    toast("Prompt cleared.");
-    renderStep();
-  });
-
-  $("#btnOpenChatGPT").addEventListener("click", openChatGPT);
-
-  // Init
-  showHome();
+  // Initial
+  render();
 </script>
 </body>
 </html>
