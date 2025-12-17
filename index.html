@@ -34,19 +34,63 @@
 <body>
 
 <h1>AI Coach</h1>
-<p>Tap through and learn by doing.</p>
+<p id="subtitle">Choose a track</p>
 
-<div class="card">
-  <h2>Everyday AI</h2>
-  <p>Learn how to ask better questions and get better results.</p>
-  <button onclick="alert('Next step works!')">Start</button>
+<div id="home">
+  <div class="card">
+    <h2>Everyday AI</h2>
+    <p>Learn how to ask better questions and get better results.</p>
+    <button onclick="openLesson()">Start</button>
+  </div>
 </div>
 
-<div class="card">
-  <h2>Build with AI</h2>
-  <p>Learn how to use AI to help you code and build apps.</p>
-  <button onclick="alert('Builder track coming next')">Start</button>
+<div id="lesson" style="display:none">
+  <div class="card">
+    <h2 id="stepTitle"></h2>
+    <p id="stepText"></p>
+    <button onclick="nextStep()">Next</button>
+  </div>
 </div>
+
+<script>
+  const steps = [
+    {
+      title: "Start with a clear goal",
+      text: "Tell the AI exactly what outcome you want in one sentence."
+    },
+    {
+      title: "Add constraints",
+      text: "Add time, budget, format, and what to avoid."
+    },
+    {
+      title: "Ask for options",
+      text: "Ask for 2–3 options and a recommendation."
+    }
+  ];
+
+  let current = 0;
+
+  function openLesson() {
+    document.getElementById("home").style.display = "none";
+    document.getElementById("lesson").style.display = "block";
+    document.getElementById("subtitle").innerText = "Lesson 1 of 1";
+    renderStep();
+  }
+
+  function renderStep() {
+    document.getElementById("stepTitle").innerText = steps[current].title;
+    document.getElementById("stepText").innerText = steps[current].text;
+  }
+
+  function nextStep() {
+    if (current < steps.length - 1) {
+      current++;
+      renderStep();
+    } else {
+      alert("Lesson complete!");
+    }
+  }
+</script>
 
 </body>
 </html>
